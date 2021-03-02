@@ -35,7 +35,6 @@ class Normalize(Layer):
 def create_multibox_head(source_layers, num_priors, normalizations, num_classes=3, regularization=5e-4):
     mbox_conf = []
     mbox_loc = []
-    
     for i, layer in enumerate(source_layers):
         x = layer
         name = x.name.split('/')[0]

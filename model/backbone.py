@@ -1,6 +1,5 @@
 import efficientnet.keras as efn
 import tensorflow as tf
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from tensorflow import keras
 from keras.layers import Conv2D, BatchNormalization, Activation, Dense, Concatenate, Flatten, Reshape, Dropout
 from keras.regularizers import l2
@@ -49,60 +48,37 @@ def create_base_model(base_model_name, pretrained=True, IMAGE_SIZE=[300, 300]):
         weights = None
     else:
         weights = "imagenet"
-
-    # if base_model_name == 'B0':
-    #     base = efn.EfficientNetB0(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B1':
-    #     base = efn.EfficientNetB1(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B2':
-    #     base = efn.EfficientNetB2(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B3':
-    #     base = efn.EfficientNetB3(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B4':
-    #     base = efn.EfficientNetB4(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B5':
-    #     base = efn.EfficientNetB5(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B6':
-    #     base = efn.EfficientNetB6(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    # elif base_model_name == 'B7':
-    #     base = efn.EfficientNetB7(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
-    
-    base = MobileNetV2(include_top=False, input_shape=[*IMAGE_SIZE, 3])
-
-    # base = remove_dropout(base)
-    
+    if base_model_name == 'B0':
+        base = efn.EfficientNetB0(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B1':
+        base = efn.EfficientNetB1(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B2':
+        base = efn.EfficientNetB2(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B3':
+        base = efn.EfficientNetB3(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B4':
+        base = efn.EfficientNetB4(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B5':
+        base = efn.EfficientNetB5(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B6':
+        base = efn.EfficientNetB6(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    elif base_model_name == 'B7':
+        base = efn.EfficientNetB7(weights=weights, include_top=False, input_shape=[*IMAGE_SIZE, 3])
+    base = remove_dropout(base)
     base.trainable = True
     return base
+
 
 
 def create_backbone(base_model_name, pretrained=True, IMAGE_SIZE=[300, 300], regularization=5e-4):
     source_layers = []
     base = create_base_model(base_model_name, pretrained, IMAGE_SIZE)
-    # layer_names = source_layers_to_extract[base_model_name]
-
-    # for name in layer_names:
-    #     source_layers.append(base.get_layer(name).output)
+    layer_names = source_layers_to_extract[base_model_name]
+    for name in layer_names:
+        source_layers.append(base.get_layer(name).output)
     
-    # x = source_layers[-1]
-    # source_layers.extend(add_extras(extra_layers_params, x))
-    
-    first_conv = base.get_layer("block_13_expand_relu").output
-    second_conv = base.output
-
-    thrid_conv_1 = Conv2D(256, (1, 1), strides=(1, 1), padding="valid", activation="relu", name="thrid_conv_1")(second_conv)
-    thrid_conv_2 = Conv2D(512, (3, 3), strides=(2, 2), padding="same", activation="relu", name="thrid_conv_2")(thrid_conv_1)
-
-    forth_conv_1 = Conv2D(128, (1, 1), strides=(1, 1), padding="valid", activation="relu", name="forth_conv_1")(thrid_conv_2)
-    forth_conv_2 = Conv2D(256, (3, 3), strides=(2, 2), padding="same", activation="relu", name="forth_conv_2")(forth_conv_1)
-
-    fifth_conv_1 = Conv2D(128, (1, 1), strides=(1, 1), padding="valid", activation="relu", name="fifth_conv_1")(forth_conv_2)
-    fifth_conv_2 = Conv2D(256, (3, 3), strides=(2, 2), padding="same", activation="relu", name="fifth_conv_2")(fifth_conv_1)
-
-    sixth_conv_1 = Conv2D(128, (1, 1), strides=(1, 1), padding="valid", activation="relu", name="sixth_conv_1")(fifth_conv_2)
-    sixth_conv_2 = Conv2D(256, (3, 3), strides=(2, 2), padding="same", activation="relu", name="sixth_conv_2")(sixth_conv_1)
-    
-    source_layers = [first_conv, second_conv, thrid_conv_2, forth_conv_2, fifth_conv_2, sixth_conv_2]
-    
+    x = source_layers[-1]
+    source_layers.extend(add_extras(extra_layers_params, x))
     return base.input, source_layers
 
 

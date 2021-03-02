@@ -49,7 +49,6 @@ def multibox_loss(y_true, y_pred, num_classes=3):
     # derived from cross_entropy=sum(log(p))
     loss = -tf.nn.log_softmax(confidence, axis=2)[:, :, 0]
     loss = tf.stop_gradient(loss)
-    
     # print(loss)
     mask = hard_negative_mining(loss, labels, neg_pos_ratio)
     mask = tf.stop_gradient(mask)
