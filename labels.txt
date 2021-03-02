@@ -1,0 +1,2 @@
+defect
+non-defect
